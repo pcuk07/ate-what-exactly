@@ -5,7 +5,9 @@ import type {
   Food,
   Goals,
   MealEntry,
+  MealItem,
   MealType,
+  Recipe,
   VisionResult,
   WeekSummary,
 } from "@awe/core";
@@ -102,6 +104,14 @@ export const api = {
     restaurantName?: string;
   }) => request<MealEntry>("/meals/photo", { method: "POST", body: JSON.stringify(body) }),
   getEntry: (id: string) => request<MealEntry>(`/meals/${id}`),
+  listRecipes: () => request<Recipe[]>("/recipes"),
+  createRecipe: (body: { name: string; ingredients: MealItem[]; portions: number }) =>
+    request<Recipe>("/recipes", { method: "POST", body: JSON.stringify(body) }),
+  logRecipe: (recipeId: string, mealType?: MealType) =>
+    request<MealEntry>("/meals/recipe", {
+      method: "POST",
+      body: JSON.stringify({ recipeId, mealType }),
+    }),
   correctEntry: (id: string, patch: Record<string, unknown>) =>
     request<MealEntry>(`/meals/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
   deleteEntry: (id: string) => request<void>(`/meals/${id}`, { method: "DELETE" }),

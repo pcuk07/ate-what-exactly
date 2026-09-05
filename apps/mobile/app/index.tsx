@@ -155,29 +155,60 @@ export default function TodayScreen() {
         ) : null}
       </ScrollView>
 
-      {/* The capture button floats above the content, always in the thumb zone (§7.5). */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Log a meal"
-        onPress={() => {
-          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          router.push("/capture");
+      {/* The primary action stays in the thumb zone (§7.5); recipes sit
+          beside it as the quieter, secondary path. */}
+      <View
+        style={{
+          position: "absolute",
+          bottom: space.xl,
+          left: 0,
+          right: 0,
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: space.sm,
         }}
-        style={[
-          {
-            position: "absolute",
-            bottom: space.xl,
-            alignSelf: "center",
-            backgroundColor: palette.accent,
-            paddingHorizontal: space.xl,
-            paddingVertical: space.md,
-            borderRadius: radius.pill,
-          },
-          cornerCurve,
-        ]}
       >
-        <Text style={[type.headline, { color: palette.accentInk }]}>Log a meal</Text>
-      </Pressable>
+        <Link href="/recipes" asChild>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Saved recipes"
+            style={[
+              {
+                borderWidth: 1,
+                borderColor: palette.separator,
+                backgroundColor: palette.bg,
+                paddingHorizontal: space.md,
+                paddingVertical: space.md,
+                borderRadius: radius.pill,
+              },
+              cornerCurve,
+            ]}
+          >
+            <Text style={[type.headline, { color: palette.label }]}>Recipes</Text>
+          </Pressable>
+        </Link>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Log a meal"
+          onPress={() => {
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            router.push("/capture");
+          }}
+          style={[
+            {
+              backgroundColor: palette.accent,
+              paddingHorizontal: space.xl,
+              paddingVertical: space.md,
+              borderRadius: radius.pill,
+            },
+            cornerCurve,
+          ]}
+        >
+          <Text style={[type.headline, { color: palette.accentInk }]}>Log a meal</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }

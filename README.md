@@ -21,10 +21,10 @@ a correction never promotes a guess to a measurement.
 
 ## Status
 
-**Pre-release.** The domain logic, the API, the MCP connector and the database
-schema are built and tested (123 tests). The mobile app is written but has not
-been run against a real Supabase project or a physical device — see
-[Not done yet](#not-done-yet).
+**Pre-release.** The engine, the API, the MCP connector and the schema are built
+and tested (145 tests). The app now signs in, logs by photo or barcode, saves
+weighed recipes, and lets you correct an entry — but it has never been run
+against a real Supabase project or on a device. See [Not done yet](#not-done-yet).
 
 ## How it works
 
@@ -54,6 +54,7 @@ the app take exactly the same path into the database.
 | `packages/core/src/calibration.ts` | Corrections teach the app per dish, using a geometric mean of past ratios. No ML, fully inspectable. |
 | `packages/core/src/vision.ts` | Claude returns components and questions; **we** do the arithmetic, so totals are reproducible and the model can never hand us a number we didn't compute. |
 | `packages/core/src/usual.ts` | "Your usual breakfast?" — deterministic, from your own last 30 days. |
+| `packages/core/src/photos.ts` | A photo path must live in your own folder. Storage RLS guards the upload; this guards the *claim*, which RLS can't see. |
 | `packages/server/src/auth/` | OAuth 2.1 with PKCE and refresh-token reuse detection, so other people can connect this to their own Claude. |
 | `supabase/migrations/0001_initial_schema.sql` | RLS on every table; the OAuth tables have RLS with *zero* policies, so only the service role can reach them. |
 
@@ -79,7 +80,7 @@ psql "$DATABASE_URL" -f supabase/seed.sql   # local development only
 ## Checks
 
 ```bash
-npm test          # 123 tests across core and server
+npm test          # 145 tests across core and server
 npm run typecheck
 ```
 
@@ -102,9 +103,11 @@ OAuth grant in one transaction.
 Being straight about what's built and what isn't:
 
 - **The mobile app has never been run.** It's written against Expo SDK 54 APIs
-  but has not been installed, launched, or tested on a device or simulator.
-- **No Supabase project exists**, so the migrations have never been applied and
-  the repositories have only been exercised against in-memory fakes.
+  and typechecks against the real ones, but has not been installed, launched, or
+  tested on a device or simulator. Every screen below is unproven in that sense.
+- **No Supabase project exists**, so the migrations have never been applied, no
+  sign-in has ever succeeded, and no photo has ever been uploaded. The
+  repositories have only been exercised against in-memory fakes.
 - **The vision call has never hit the real API.** `VisionService` is covered by
   its schema contract, not by a live request.
 - **`restaurant_items` seed data is invented placeholder figures**, clearly
@@ -113,7 +116,12 @@ Being straight about what's built and what isn't:
 - **Liquid Glass, Live Activities and widgets** from the design doc's §7.8 are
   designed but not implemented; they depend on alpha Expo packages that need a
   spike first.
-- **Sign in with Apple** is specified but not wired up; there's no auth UI yet.
+- **Sign in with Apple** is specified but not wired up. Sign-in today is an
+  email one-time code, which is enough to use the app and keeps Apple's
+  guideline 4.8 out of scope until a social login exists.
+- **No in-app account deletion yet.** The `delete_my_account` SQL function is
+  written and tested; nothing calls it, which App Store guideline 5.1.1(v)
+  requires before submission.
 
 ## The design doc
 

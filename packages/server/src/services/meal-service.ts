@@ -23,6 +23,7 @@ import {
   type Macros,
   type MealEntry,
   type MealItem,
+  type Recipe,
   type MealType,
   type VisionResult,
   type WeekSummary,
@@ -240,6 +241,40 @@ export class MealService {
     const entry = await this.deps.meals.getById(mealId);
     if (!entry) throw new NotFoundError("That entry no longer exists.");
     return entry;
+  }
+
+  /**
+   * Saved home-cooked meals (design doc §5.2). Weighing the ingredients once
+   * buys Tier B accuracy every time it is re-logged, which is the whole point:
+   * the first log is work, the fifth is one tap.
+   */
+  async listRecipes(): Promise<Recipe[]> {
+    return this.deps.recipes.list();
+  }
+
+  async createRecipe(input: { name: string; ingredients: MealItem[]; portions: number }): Promise<Recipe> {
+    return this.deps.recipes.create({
+      userId: this.userId,
+      name: input.name,
+      ingredients: input.ingredients,
+      portions: input.portions,
+    });
+  }
+
+  /** Log one portion of a saved recipe. Always Tier B — the weights are real. */
+  async logRecipePortion(
+    recipeId: string,
+    opts: { mealType?: MealType; loggedAt?: string } = {},
+  ): Promise<MealEntry> {
+    const recipe = await this.deps.recipes.getById(recipeId);
+    if (!recipe) throw new NotFoundError("That recipe no longer exists.");
+    const input: LogMealInput = {
+      name: recipe.name,
+      source: { kind: "recipe", recipeId: recipe.id, portions: recipe.portions },
+    };
+    if (opts.mealType) input.mealType = opts.mealType;
+    if (opts.loggedAt) input.loggedAt = opts.loggedAt;
+    return this.logMeal(input);
   }
 
   /** The Today screen (design doc §6.1). */

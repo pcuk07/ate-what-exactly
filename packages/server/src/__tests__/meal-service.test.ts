@@ -401,6 +401,45 @@ describe("reading one entry", () => {
   });
 });
 
+describe("recipes", () => {
+  const chilli = [
+    { name: "beef mince", grams: 500, per100g: { kcal: 250, proteinG: 26, carbsG: 0, fatG: 16, fibreG: 0 } },
+    { name: "kidney beans", grams: 400, per100g: { kcal: 127, proteinG: 8.7, carbsG: 22, fatG: 0.5, fibreG: 6.4 } },
+  ];
+
+  it("saves a recipe against the signed-in user", async () => {
+    const { service } = build();
+    const recipe = await service.createRecipe({ name: "Batch chilli", ingredients: chilli, portions: 4 });
+    expect(recipe.name).toBe("Batch chilli");
+    expect(recipe.userId).toBe("u1");
+    expect(await service.listRecipes()).toHaveLength(1);
+  });
+
+  it("logs one portion as weighed data, not an estimate", async () => {
+    const { service, recipes } = build();
+    recipes.rows.push({ id: "r1", userId: "u1", name: "Batch chilli", ingredients: chilli, portions: 4 });
+
+    const entry = await service.logRecipePortion("r1");
+    expect(entry.tier).toBe("B");
+    expect(entry.errorBand).toBe(0.05);
+    expect(entry.name).toBe("Batch chilli");
+    // (500g × 250 + 400g × 127) / 4 portions
+    expect(entry.macros.kcal).toBeCloseTo(439.5, 0);
+  });
+
+  it("honours an explicit meal type when logging a portion", async () => {
+    const { service, recipes } = build(new Date("2026-09-03T07:15:00Z"));
+    recipes.rows.push({ id: "r1", userId: "u1", name: "Batch chilli", ingredients: chilli, portions: 4 });
+    const entry = await service.logRecipePortion("r1", { mealType: "dinner" });
+    expect(entry.mealType).toBe("dinner");
+  });
+
+  it("refuses to log a recipe that has been deleted", async () => {
+    const { service } = build();
+    await expect(service.logRecipePortion("gone")).rejects.toThrow(NotFoundError);
+  });
+});
+
 describe("day and week views", () => {
   beforeEach(() => vi.useRealTimers());
 

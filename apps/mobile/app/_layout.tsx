@@ -56,6 +56,8 @@ function Gate() {
       />
       <Stack.Screen name="goals" options={{ title: "Goals", presentation: "modal" }} />
       <Stack.Screen name="entry/[id]" options={{ title: "Entry" }} />
+      <Stack.Screen name="recipes/index" options={{ title: "Recipes", presentation: "modal" }} />
+      <Stack.Screen name="recipes/new" options={{ title: "New recipe" }} />
     </Stack>
   );
 }

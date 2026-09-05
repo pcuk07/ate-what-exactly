@@ -7,6 +7,7 @@ import {
   MealTypeSchema,
   BarcodeSchema,
   CorrectionInputSchema,
+  MealItemSchema,
   isOwnedPhotoPath,
 } from "@awe/core";
 import type { Config } from "../config.js";
@@ -183,6 +184,49 @@ export function createApiRouter(config: Config, vision = new VisionService(confi
     }
     const { result, answers, ...opts } = parsed.data;
     res.status(201).json(await req.service!.logFromVision(result, answers, opts));
+  });
+
+  router.get("/recipes", async (req, res) => {
+    res.json(await req.service!.listRecipes());
+  });
+
+  const CreateRecipeSchema = z.object({
+    name: z.string().min(1).max(120),
+    ingredients: z.array(MealItemSchema).min(1).max(40),
+    portions: z.number().int().min(1).max(50),
+  });
+
+  router.post("/recipes", async (req, res) => {
+    const parsed = CreateRecipeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "invalid_request", issues: parsed.error.issues });
+      return;
+    }
+    res.status(201).json(await req.service!.createRecipe(parsed.data));
+  });
+
+  const LogRecipeSchema = z.object({
+    recipeId: z.string().min(1),
+    mealType: MealTypeSchema.optional(),
+    loggedAt: z.string().datetime().optional(),
+  });
+
+  router.post("/meals/recipe", async (req, res) => {
+    const parsed = LogRecipeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "invalid_request", issues: parsed.error.issues });
+      return;
+    }
+    const { recipeId, ...opts } = parsed.data;
+    try {
+      res.status(201).json(await req.service!.logRecipePortion(recipeId, opts));
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        res.status(404).json({ error: "not_found", message: err.message });
+        return;
+      }
+      throw err;
+    }
   });
 
   router.get("/meals/:id", async (req, res) => {
