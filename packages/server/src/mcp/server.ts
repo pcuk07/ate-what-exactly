@@ -54,10 +54,10 @@ const text = (s: string) => ({ content: [{ type: "text" as const, text: s }] });
 
 export function createMcpServer(service: MealService): McpServer {
   const server = new McpServer(
-    { name: "ate-what-exactly", version: "0.1.0" },
+    { name: "awe", version: "0.1.0" },
     {
       instructions:
-        "Ate What, Exactly is a food diary that records how confident each entry is. " +
+        "awe (Ate What Exactly) is a food diary that records how confident each entry is. " +
         "Every logged meal carries a tier: A = barcode/label data (±1–2 %), B = weighed home cooking (±2–5 %), " +
         "C = matched to a restaurant's published nutrition (±5–15 %), D = estimated from a photo or description (±15–30 %). " +
         "When you report numbers from this diary, carry the tier with them and do not present a Tier D estimate as a precise figure.",

@@ -230,7 +230,7 @@ const escape = (s: string) =>
 function page(body: string): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ate What, Exactly</title>
+<title>awe</title>
 <style>
 :root{color-scheme:light dark}
 body{font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:26rem;margin:3rem auto;padding:0 1.25rem}

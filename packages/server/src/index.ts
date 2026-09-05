@@ -8,7 +8,7 @@ app.listen(config.PORT, () => {
   console.log(
     JSON.stringify({
       level: "info",
-      message: `Ate What, Exactly listening on ${config.PORT}`,
+      message: `awe listening on ${config.PORT}`,
       baseUrl: config.PUBLIC_BASE_URL,
       visionModel: config.VISION_MODEL,
     }),

@@ -1,7 +1,7 @@
-# Ate What, Exactly
+# awe
 
-A food diary that records **how confident each entry is**, instead of presenting
-every number as a fact.
+**Ate What Exactly.** A food diary that records **how confident each entry is**,
+instead of presenting every number as a fact.
 
 Photo-based calorie apps hallucinate portions. Barcode apps are accurate right
 up until you eat something that didn't come in a wrapper — which is most

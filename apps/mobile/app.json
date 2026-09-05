@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Ate What, Exactly",
-    "slug": "ate-what-exactly",
+    "name": "awe",
+    "slug": "awe",
     "version": "0.1.0",
     "orientation": "portrait",
-    "scheme": "atewhatexactly",
+    "scheme": "awe",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

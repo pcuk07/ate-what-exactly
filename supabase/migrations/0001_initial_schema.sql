@@ -1,4 +1,4 @@
--- Ate What, Exactly — initial schema.
+-- awe (Ate What Exactly) — initial schema.
 -- Design doc §8 (data model) and §10 (security). Every table has RLS enabled.
 -- User-owned tables are readable and writable only by their owner; the shared
 -- food tables are world-readable and service-role-writable; the OAuth tables

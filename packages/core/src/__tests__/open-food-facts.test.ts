@@ -60,9 +60,9 @@ describe("fetchOpenFoodFacts", () => {
         seen = init?.headers;
         return { ok: true, status: 200, json: async () => offFixture };
       },
-      "AteWhatExactly/0.1 (hello@example.com)",
+      "awe/0.1 (hello@example.com)",
     );
-    expect(seen?.["User-Agent"]).toContain("AteWhatExactly");
+    expect(seen?.["User-Agent"]).toContain("awe");
     expect(food?.name).toBe("Porridge Oats");
   });
 

@@ -28,7 +28,7 @@ const EnvSchema = z.object({
   MCP_TOKEN_SECRET: z.string().min(32),
 
   /** Contact string sent to Open Food Facts, which asks for identifiable traffic. */
-  OFF_USER_AGENT: z.string().default("AteWhatExactly/0.1 (support@atewhatexactly.app)"),
+  OFF_USER_AGENT: z.string().default("awe/0.1 (support@atewhatexactly.app)"),
 
   /** Per-user photo estimates allowed per rolling hour. Vision calls cost money. */
   RATE_LIMIT_VISION_PER_HOUR: z.coerce.number().int().min(1).default(30),

@@ -1,5 +1,5 @@
 {
-  "name": "ate-what-exactly",
+  "name": "awe",
   "private": true,
   "version": "0.1.0",
   "description": "Photo-first food logging with honest confidence tiers. Expo app + Node service layer + remote MCP connector on Supabase.",
