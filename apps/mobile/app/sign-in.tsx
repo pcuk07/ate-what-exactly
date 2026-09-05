@@ -6,10 +6,12 @@ import {
   Pressable,
   Text,
   TextInput,
+  useColorScheme,
   View,
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "../src/auth";
+import { AppleSignInButton } from "../src/components/AppleSignInButton";
 import { isConfigured } from "../src/supabase";
 import { cornerCurve, radius, space, type, usePalette } from "../src/theme";
 
@@ -20,6 +22,7 @@ import { cornerCurve, radius, space, type, usePalette } from "../src/theme";
  */
 export default function SignInScreen() {
   const palette = usePalette();
+  const scheme = useColorScheme();
   const { sendCode, verifyCode } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -72,6 +75,10 @@ export default function SignInScreen() {
             This build has no Supabase project configured, so signing in won't work yet. Set
             EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.
           </Text>
+        ) : null}
+
+        {stage === "email" ? (
+          <AppleSignInButton dark={scheme === "dark"} onError={setError} />
         ) : null}
 
         {stage === "email" ? (

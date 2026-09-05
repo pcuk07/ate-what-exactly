@@ -10,6 +10,7 @@
     "ios": {
       "bundleIdentifier": "app.atewhatexactly.ios",
       "supportsTablet": false,
+      "usesAppleSignIn": true,
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -65,7 +66,8 @@
     "plugins": [
       "expo-router",
       ["expo-camera", { "cameraPermission": "To photograph your meals and scan barcodes so they can be logged." }],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true

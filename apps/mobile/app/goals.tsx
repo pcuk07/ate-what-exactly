@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { DEFAULT_GOALS, type Goals } from "@awe/core";
 import { api } from "../src/api";
 import { useAuth } from "../src/auth";
@@ -150,6 +150,12 @@ export default function GoalsScreen() {
       >
         <Text style={[type.body, { color: palette.label2 }]}>Sign out</Text>
       </Pressable>
+
+      <Link href="/account" asChild>
+        <Pressable accessibilityRole="button" style={{ alignItems: "center", paddingBottom: space.md }}>
+          <Text style={[type.body, { color: palette.accent }]}>Account &amp; privacy</Text>
+        </Pressable>
+      </Link>
     </ScrollView>
   );
 }

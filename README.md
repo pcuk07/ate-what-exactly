@@ -116,12 +116,13 @@ Being straight about what's built and what isn't:
 - **Liquid Glass, Live Activities and widgets** from the design doc's §7.8 are
   designed but not implemented; they depend on alpha Expo packages that need a
   spike first.
-- **Sign in with Apple** is specified but not wired up. Sign-in today is an
-  email one-time code, which is enough to use the app and keeps Apple's
-  guideline 4.8 out of scope until a social login exists.
-- **No in-app account deletion yet.** The `delete_my_account` SQL function is
-  written and tested; nothing calls it, which App Store guideline 5.1.1(v)
-  requires before submission.
+- **Sign in with Apple is written but unverifiable here.** It needs the Apple
+  provider enabled in Supabase and a device to run on. Crucially, **Apple token
+  revocation on account deletion is deliberately not implemented** — it needs
+  your Team ID, Key ID and `.p8` private key, and faking those would produce
+  something that looks finished and fails at review. See
+  [docs/app-store.md](docs/app-store.md).
+- **No privacy policy exists** at the URL the app links to.
 
 ## The design doc
 
