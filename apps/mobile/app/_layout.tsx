@@ -55,6 +55,7 @@ function Gate() {
         options={{ title: "Log a meal", presentation: "fullScreenModal", headerShown: false }}
       />
       <Stack.Screen name="goals" options={{ title: "Goals", presentation: "modal" }} />
+      <Stack.Screen name="entry/[id]" options={{ title: "Entry" }} />
     </Stack>
   );
 }

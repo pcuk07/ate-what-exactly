@@ -185,26 +185,29 @@ export default function TodayScreen() {
 function EntryRow({ entry, palette }: { entry: MealEntry; palette: ReturnType<typeof usePalette> }) {
   const time = new Date(entry.loggedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   return (
-    <View
-      accessible
-      accessibilityLabel={`${entry.name}, ${Math.round(entry.macros.kcal)} calories, at ${time}`}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: space.sm,
-        paddingVertical: space.sm + 2,
-        borderBottomWidth: 1,
-        borderBottomColor: palette.separator,
-      }}
-    >
-      <Text style={[type.footnote, { color: palette.label2, width: 46, fontVariant: ["tabular-nums"] }]}>
-        {time}
-      </Text>
-      <Text style={[type.body, { color: palette.label, flex: 1 }]} numberOfLines={2}>
-        {entry.name}
-      </Text>
-      <TierBadge tier={entry.tier} palette={palette} />
-      <Text style={[type.bodyNum, { color: palette.label2 }]}>{Math.round(entry.macros.kcal)}</Text>
-    </View>
+    <Link href={{ pathname: "/entry/[id]", params: { id: entry.id } }} asChild>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${entry.name}, ${Math.round(entry.macros.kcal)} calories, at ${time}`}
+        accessibilityHint="Opens the entry to correct or delete it"
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: space.sm,
+          paddingVertical: space.sm + 2,
+          borderBottomWidth: 1,
+          borderBottomColor: palette.separator,
+        }}
+      >
+        <Text style={[type.footnote, { color: palette.label2, width: 46, fontVariant: ["tabular-nums"] }]}>
+          {time}
+        </Text>
+        <Text style={[type.body, { color: palette.label, flex: 1 }]} numberOfLines={2}>
+          {entry.name}
+        </Text>
+        <TierBadge tier={entry.tier} palette={palette} />
+        <Text style={[type.bodyNum, { color: palette.label2 }]}>{Math.round(entry.macros.kcal)}</Text>
+      </Pressable>
+    </Link>
   );
 }

@@ -185,6 +185,18 @@ export function createApiRouter(config: Config, vision = new VisionService(confi
     res.status(201).json(await req.service!.logFromVision(result, answers, opts));
   });
 
+  router.get("/meals/:id", async (req, res) => {
+    try {
+      res.json(await req.service!.getEntry(req.params.id));
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        res.status(404).json({ error: "not_found", message: err.message });
+        return;
+      }
+      throw err;
+    }
+  });
+
   router.patch("/meals/:id", async (req, res) => {
     const parsed = CorrectionInputSchema.safeParse(req.body);
     if (!parsed.success) {

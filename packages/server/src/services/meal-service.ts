@@ -235,6 +235,13 @@ export class MealService {
     await this.deps.meals.delete(mealId);
   }
 
+  /** One entry, for the detail screen. */
+  async getEntry(mealId: string): Promise<MealEntry> {
+    const entry = await this.deps.meals.getById(mealId);
+    if (!entry) throw new NotFoundError("That entry no longer exists.");
+    return entry;
+  }
+
   /** The Today screen (design doc §6.1). */
   async getDay(date?: string): Promise<DaySummary> {
     const key = date ?? localDateKey(this.now(), this.timeZone);

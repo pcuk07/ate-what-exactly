@@ -1,13 +1,15 @@
 import { useRef, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from "react-native";
+// `type` below is the typography scale, not the TS keyword.
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import type { VisionResult } from "@awe/core";
+import type { Food, VisionResult } from "@awe/core";
 import { api, grantAiConsent, hasAiConsent } from "../src/api";
 import { useAuth } from "../src/auth";
 import { uploadMealPhoto } from "../src/photos";
+import { BarcodeSheet } from "../src/components/BarcodeSheet";
 import { ConsentSheet } from "../src/components/ConsentSheet";
 import { QuestionSheet } from "../src/components/QuestionSheet";
 import { cornerCurve, radius, space, type, usePalette } from "../src/theme";
@@ -23,7 +25,7 @@ import { cornerCurve, radius, space, type, usePalette } from "../src/theme";
  */
 const MAX_EDGE = 1568;
 
-type Phase = "camera" | "reading" | "questions" | "saving";
+type Phase = "camera" | "reading" | "confirm-barcode" | "questions" | "saving";
 
 export default function CaptureScreen() {
   const palette = usePalette();
@@ -34,6 +36,7 @@ export default function CaptureScreen() {
 
   const [phase, setPhase] = useState<Phase>("camera");
   const [result, setResult] = useState<VisionResult | null>(null);
+  const [scanned, setScanned] = useState<Food | null>(null);
   const [photoPath, setPhotoPath] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [askingConsent, setAskingConsent] = useState(false);
@@ -62,16 +65,27 @@ export default function CaptureScreen() {
     if (scannedRef.current || phase !== "camera") return;
     scannedRef.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setPhase("saving");
+    setPhase("reading");
     try {
       const food = await api.lookupBarcode(data);
-      await api.logBarcode(data, food.servingG ?? 100);
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
+      setScanned(food);
+      setPhase("confirm-barcode");
     } catch {
       setError("That barcode isn't in the database yet. Try a photo instead.");
       setPhase("camera");
       scannedRef.current = false;
+    }
+  };
+
+  const logScanned = async (grams: number) => {
+    if (!scanned) return;
+    setPhase("saving");
+    try {
+      await api.logBarcode(scanned.barcode, grams);
+      router.back();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not log that. Try again.");
+      setPhase("confirm-barcode");
     }
   };
 
@@ -148,6 +162,28 @@ export default function CaptureScreen() {
             setPhase("camera");
           }}
         />
+      </ScrollView>
+    );
+  }
+
+  if ((phase === "confirm-barcode" || (phase === "saving" && scanned)) && scanned) {
+    return (
+      <ScrollView style={{ flex: 1, backgroundColor: palette.bg }} contentInsetAdjustmentBehavior="automatic">
+        <BarcodeSheet
+          food={scanned}
+          palette={palette}
+          busy={phase === "saving"}
+          onConfirm={logScanned}
+          onCancel={() => {
+            setScanned(null);
+            setError(null);
+            scannedRef.current = false;
+            setPhase("camera");
+          }}
+        />
+        {error ? (
+          <Text style={[type.footnote, { color: palette.over, paddingHorizontal: space.lg }]}>{error}</Text>
+        ) : null}
       </ScrollView>
     );
   }

@@ -356,6 +356,49 @@ describe("corrections and calibration", () => {
     const { service } = build();
     await expect(service.correctEntry("nope", { macros: { kcal: 1 } })).rejects.toThrow(NotFoundError);
   });
+
+  it("leaves untouched macros alone when only the calories are corrected", async () => {
+    const { service } = build();
+    const entry = await service.logMeal({
+      name: "Takeaway curry",
+      macros: { kcal: 800, proteinG: 35, carbsG: 90, fatG: 28, fibreG: 6 },
+      source: { kind: "manual" },
+    });
+    const corrected = await service.correctEntry(entry.id, { macros: { kcal: 950 } });
+    expect(corrected.macros.kcal).toBe(950);
+    expect(corrected.macros.proteinG).toBe(35);
+    expect(corrected.macros.fibreG).toBe(6);
+  });
+});
+
+describe("reading one entry", () => {
+  it("returns the entry the detail screen asked for", async () => {
+    const { service } = build();
+    const logged = await service.logMeal({
+      name: "Porridge",
+      macros: { kcal: 410, proteinG: 12, carbsG: 60, fatG: 9, fibreG: 8 },
+      source: { kind: "manual" },
+    });
+    const found = await service.getEntry(logged.id);
+    expect(found.id).toBe(logged.id);
+    expect(found.name).toBe("Porridge");
+  });
+
+  it("says so plainly when the entry is gone", async () => {
+    const { service } = build();
+    await expect(service.getEntry("missing")).rejects.toThrow(NotFoundError);
+  });
+
+  it("does not return an entry that was deleted", async () => {
+    const { service } = build();
+    const logged = await service.logMeal({
+      name: "Snack",
+      macros: { kcal: 190, proteinG: 4, carbsG: 20, fatG: 10, fibreG: 3 },
+      source: { kind: "manual" },
+    });
+    await service.deleteEntry(logged.id);
+    await expect(service.getEntry(logged.id)).rejects.toThrow(NotFoundError);
+  });
 });
 
 describe("day and week views", () => {

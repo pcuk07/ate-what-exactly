@@ -101,6 +101,7 @@ export const api = {
     mealType?: MealType;
     restaurantName?: string;
   }) => request<MealEntry>("/meals/photo", { method: "POST", body: JSON.stringify(body) }),
+  getEntry: (id: string) => request<MealEntry>(`/meals/${id}`),
   correctEntry: (id: string, patch: Record<string, unknown>) =>
     request<MealEntry>(`/meals/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
   deleteEntry: (id: string) => request<void>(`/meals/${id}`, { method: "DELETE" }),

@@ -57,7 +57,13 @@ export const space = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 } as const;
  * nesting: an inner radius is the outer minus its padding (§7.5).
  */
 export const radius = { card: 20, inner: 12, pill: 999 } as const;
-export const cornerCurve = Platform.OS === "ios" ? ({ borderCurve: "continuous" } as const) : {};
+
+/**
+ * Typed as a plain optional rather than `as const`: the const union isn't
+ * assignable to ImageStyle, and this is applied to images as well as views.
+ */
+export const cornerCurve: { borderCurve?: "continuous" } =
+  Platform.OS === "ios" ? { borderCurve: "continuous" } : {};
 
 /**
  * Type roles (§7.4). The hero numeral is the one warm gesture: SF Pro Rounded
