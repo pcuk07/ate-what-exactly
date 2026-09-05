@@ -229,6 +229,23 @@ export function createApiRouter(config: Config, vision = new VisionService(confi
     }
   });
 
+  router.post("/meals/:id/repeat", async (req, res) => {
+    const mealType = MealTypeSchema.safeParse(req.body?.mealType);
+    try {
+      const entry = await req.service!.repeatEntry(
+        req.params.id,
+        mealType.success ? { mealType: mealType.data } : {},
+      );
+      res.status(201).json(entry);
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        res.status(404).json({ error: "not_found", message: err.message });
+        return;
+      }
+      throw err;
+    }
+  });
+
   router.get("/meals/:id", async (req, res) => {
     try {
       res.json(await req.service!.getEntry(req.params.id));

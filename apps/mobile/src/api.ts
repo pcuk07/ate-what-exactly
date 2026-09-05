@@ -104,6 +104,11 @@ export const api = {
     restaurantName?: string;
   }) => request<MealEntry>("/meals/photo", { method: "POST", body: JSON.stringify(body) }),
   getEntry: (id: string) => request<MealEntry>(`/meals/${id}`),
+  repeatEntry: (id: string, mealType?: MealType) =>
+    request<MealEntry>(`/meals/${id}/repeat`, {
+      method: "POST",
+      body: JSON.stringify({ mealType }),
+    }),
   listRecipes: () => request<Recipe[]>("/recipes"),
   createRecipe: (body: { name: string; ingredients: MealItem[]; portions: number }) =>
     request<Recipe>("/recipes", { method: "POST", body: JSON.stringify(body) }),

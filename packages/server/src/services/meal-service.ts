@@ -244,6 +244,34 @@ export class MealService {
   }
 
   /**
+   * Log the same thing again — the zero-tap path behind "your usual?"
+   * (design doc §7.2). The tier is inherited rather than reset, because the
+   * evidence is unchanged: re-logging a weighed recipe is still weighed, and
+   * re-logging a photo guess is still a guess.
+   *
+   * The photo is deliberately not carried over: today's meal was not
+   * photographed, and attaching yesterday's picture to it would be a small lie.
+   */
+  async repeatEntry(mealId: string, opts: { mealType?: MealType } = {}): Promise<MealEntry> {
+    const previous = await this.deps.meals.getById(mealId);
+    if (!previous) throw new NotFoundError("That entry no longer exists.");
+
+    const source =
+      previous.source.kind === "photo"
+        ? { ...previous.source, photoPath: "" }
+        : previous.source;
+
+    const input: LogMealInput = {
+      name: previous.name,
+      items: previous.items.length > 0 ? previous.items : undefined,
+      macros: previous.macros,
+      source,
+    };
+    if (opts.mealType) input.mealType = opts.mealType;
+    return this.logMeal(input);
+  }
+
+  /**
    * Saved home-cooked meals (design doc §5.2). Weighing the ingredients once
    * buys Tier B accuracy every time it is re-logged, which is the whole point:
    * the first log is work, the fifth is one tap.

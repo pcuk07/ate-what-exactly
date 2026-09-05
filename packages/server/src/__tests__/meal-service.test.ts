@@ -128,6 +128,19 @@ function build(now = new Date("2026-09-03T12:30:00Z")) {
   return { service, meals, calibrations, foods, recipes, goals, fetchImpl };
 }
 
+/** A second service over the same stores, with the clock moved on. */
+function buildWith(existing: ReturnType<typeof build>, now: Date): MealService {
+  return new MealService("u1", {
+    meals: existing.meals as never,
+    calibrations: existing.calibrations as never,
+    foods: existing.foods as never,
+    recipes: existing.recipes as never,
+    goals: existing.goals as never,
+    config,
+    now: () => now,
+  });
+}
+
 const oats: Food = {
   id: "off:1",
   barcode: "5099073000191",
@@ -398,6 +411,68 @@ describe("reading one entry", () => {
     });
     await service.deleteEntry(logged.id);
     await expect(service.getEntry(logged.id)).rejects.toThrow(NotFoundError);
+  });
+});
+
+describe("logging the same thing again", () => {
+  it("keeps the tier, because the evidence hasn't changed", async () => {
+    const { service, recipes } = build();
+    recipes.rows.push({
+      id: "r1",
+      userId: "u1",
+      name: "Batch porridge",
+      portions: 4,
+      ingredients: [{ name: "oats", grams: 400, per100g: oats.per100g }],
+    });
+    const first = await service.logRecipePortion("r1");
+    const again = await service.repeatEntry(first.id);
+    expect(again.tier).toBe("B");
+    expect(again.macros.kcal).toBe(first.macros.kcal);
+    expect(again.id).not.toBe(first.id);
+  });
+
+  it("does not promote a photo guess by repeating it", async () => {
+    const { service } = build();
+    const first = await service.logFromVision(
+      VisionResultSchema.parse(curryFixture),
+      {},
+      { photoPath: "u1/curry.jpg" },
+    );
+    const again = await service.repeatEntry(first.id);
+    expect(again.tier).toBe("D");
+  });
+
+  it("does not attach yesterday's photo to today's meal", async () => {
+    const { service } = build();
+    const first = await service.logFromVision(
+      VisionResultSchema.parse(curryFixture),
+      {},
+      { photoPath: "u1/curry.jpg" },
+    );
+    expect(first.photoPath).toBe("u1/curry.jpg");
+    const again = await service.repeatEntry(first.id);
+    expect(again.photoPath).toBeUndefined();
+  });
+
+  it("re-infers the meal type from the time it is logged again", async () => {
+    // Same stores, a later clock: repeating a breakfast in the evening should
+    // land in dinner rather than inheriting the original's meal type.
+    const morning = build(new Date("2026-09-03T07:15:00Z"));
+    const breakfast = await morning.service.logMeal({
+      name: "Porridge",
+      macros: { kcal: 410, proteinG: 0, carbsG: 0, fatG: 0, fibreG: 0 },
+      source: { kind: "manual" },
+    });
+    expect(breakfast.mealType).toBe("breakfast");
+
+    const evening = buildWith(morning, new Date("2026-09-03T18:40:00Z"));
+    const later = await evening.repeatEntry(breakfast.id);
+    expect(later.mealType).toBe("dinner");
+  });
+
+  it("refuses to repeat an entry that is gone", async () => {
+    const { service } = build();
+    await expect(service.repeatEntry("gone")).rejects.toThrow(NotFoundError);
   });
 });
 

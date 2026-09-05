@@ -28,6 +28,7 @@ export default function TodayScreen() {
   const [usual, setUsual] = useState<{ name: string; exemplar: MealEntry } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [repeating, setRepeating] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -86,13 +87,25 @@ export default function TodayScreen() {
 
             <MacroMeters totals={day.totals} goals={day.goals} palette={palette} />
 
-            {/* The zero-tap path (§7.2): most meals are repeats. */}
+            {/* The zero-tap path (§7.2): most meals are repeats, so this
+                logs directly rather than sending you to the camera. */}
             {usual && day.totals.kcal === 0 ? (
               <Pressable
                 accessibilityRole="button"
-                onPress={() => {
+                accessibilityLabel={`Log your usual: ${usual.name}, ${Math.round(usual.exemplar.macros.kcal)} calories`}
+                disabled={repeating}
+                onPress={async () => {
                   void Haptics.selectionAsync();
-                  router.push("/capture");
+                  setRepeating(true);
+                  try {
+                    await api.repeatEntry(usual.exemplar.id);
+                    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                    await load();
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Could not log that.");
+                  } finally {
+                    setRepeating(false);
+                  }
                 }}
                 style={[
                   {
@@ -100,6 +113,7 @@ export default function TodayScreen() {
                     borderRadius: radius.card,
                     borderWidth: 1,
                     borderColor: palette.separator,
+                    opacity: repeating ? 0.6 : 1,
                   },
                   cornerCurve,
                 ]}
@@ -107,6 +121,9 @@ export default function TodayScreen() {
                 <Text style={[type.headline, { color: palette.label }]}>Your usual?</Text>
                 <Text style={[type.footnote, { color: palette.label2, marginTop: 2 }]}>
                   {usual.name} · {Math.round(usual.exemplar.macros.kcal)} kcal
+                </Text>
+                <Text style={[type.footnote, { color: palette.accent, marginTop: space.xs }]}>
+                  {repeating ? "Logging…" : "Tap to log it again"}
                 </Text>
               </Pressable>
             ) : null}
@@ -144,6 +161,16 @@ export default function TodayScreen() {
                 </Text>
               ) : null}
             </View>
+
+            <Link href="/week" asChild>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityHint="Opens the last seven days"
+                style={{ paddingVertical: space.sm, alignItems: "center" }}
+              >
+                <Text style={[type.body, { color: palette.accent }]}>See this week</Text>
+              </Pressable>
+            </Link>
 
             {day.estimatedShare > 0.5 ? (
               <Text style={[type.footnote, { color: palette.label2 }]}>

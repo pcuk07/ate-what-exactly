@@ -22,7 +22,7 @@ a correction never promotes a guess to a measurement.
 ## Status
 
 **Pre-release.** The engine, the API, the MCP connector and the schema are built
-and tested (145 tests). The app now signs in, logs by photo or barcode, saves
+and tested (150 tests). The app now signs in, logs by photo or barcode, saves
 weighed recipes, and lets you correct an entry — but it has never been run
 against a real Supabase project or on a device. See [Not done yet](#not-done-yet).
 
@@ -80,7 +80,7 @@ psql "$DATABASE_URL" -f supabase/seed.sql   # local development only
 ## Checks
 
 ```bash
-npm test          # 145 tests across core and server
+npm test          # 150 tests across core and server
 npm run typecheck
 ```
 
