@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, Switch, Text, TextInput, View
 import { useRouter } from "expo-router";
 import { DEFAULT_GOALS, type Goals } from "@awe/core";
 import { api } from "../src/api";
+import { useAuth } from "../src/auth";
 import { cornerCurve, radius, space, type, usePalette } from "../src/theme";
 
 /**
@@ -13,6 +14,7 @@ import { cornerCurve, radius, space, type, usePalette } from "../src/theme";
 export default function GoalsScreen() {
   const palette = usePalette();
   const router = useRouter();
+  const { signOut } = useAuth();
   const [goals, setGoals] = useState<Goals | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -139,6 +141,14 @@ export default function GoalsScreen() {
         ]}
       >
         <Text style={[type.headline, { color: palette.accentInk }]}>{saving ? "Saving…" : "Save"}</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={signOut}
+        accessibilityRole="button"
+        style={{ alignItems: "center", padding: space.md }}
+      >
+        <Text style={[type.body, { color: palette.label2 }]}>Sign out</Text>
       </Pressable>
     </ScrollView>
   );

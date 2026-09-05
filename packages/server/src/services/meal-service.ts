@@ -122,7 +122,11 @@ export class MealService {
       items,
       source: input.source,
     };
-    if (input.source.kind === "photo") entry.photoPath = input.source.photoPath;
+    // An empty path means the device's upload failed; record no photo rather
+    // than a path that points at nothing.
+    if (input.source.kind === "photo" && input.source.photoPath !== "") {
+      entry.photoPath = input.source.photoPath;
+    }
     return this.deps.meals.insert(entry);
   }
 

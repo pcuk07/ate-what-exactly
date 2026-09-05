@@ -6,6 +6,8 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import type { VisionResult } from "@awe/core";
 import { api, grantAiConsent, hasAiConsent } from "../src/api";
+import { useAuth } from "../src/auth";
+import { uploadMealPhoto } from "../src/photos";
 import { ConsentSheet } from "../src/components/ConsentSheet";
 import { QuestionSheet } from "../src/components/QuestionSheet";
 import { cornerCurve, radius, space, type, usePalette } from "../src/theme";
@@ -28,6 +30,7 @@ export default function CaptureScreen() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
+  const { userId } = useAuth();
 
   const [phase, setPhase] = useState<Phase>("camera");
   const [result, setResult] = useState<VisionResult | null>(null);
@@ -98,8 +101,22 @@ export default function CaptureScreen() {
       if (!resized.base64) throw new Error("no image data");
 
       const vision = await api.estimatePhoto({ data: resized.base64, mediaType: "image/jpeg" });
+
+      // Upload to the private bucket so the entry points at something durable.
+      // The local file is a cache the OS may clear at any time, so recording
+      // its URI would leave a dead path behind. A failed upload must not lose
+      // the estimate, so the meal still logs — just without the photo.
+      let storedPath = "";
+      if (userId) {
+        try {
+          storedPath = await uploadMealPhoto(userId, resized.base64);
+        } catch {
+          setError("The photo couldn't be saved, but the estimate is fine.");
+        }
+      }
+
       setResult(vision);
-      setPhotoPath(resized.uri);
+      setPhotoPath(storedPath);
       setPhase("questions");
     } catch (err) {
       setError(err instanceof Error ? err.message : "That didn't work. Try again.");

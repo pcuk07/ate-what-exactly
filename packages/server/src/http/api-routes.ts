@@ -1,6 +1,14 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
-import { GoalsSchema, AnswersSchema, VisionResultSchema, MealTypeSchema, BarcodeSchema, CorrectionInputSchema } from "@awe/core";
+import {
+  GoalsSchema,
+  AnswersSchema,
+  VisionResultSchema,
+  MealTypeSchema,
+  BarcodeSchema,
+  CorrectionInputSchema,
+  isOwnedPhotoPath,
+} from "@awe/core";
 import type { Config } from "../config.js";
 import { requireAppAuth } from "./context.js";
 import { VisionError, VisionService } from "../services/vision.js";
@@ -150,7 +158,9 @@ export function createApiRouter(config: Config, vision = new VisionService(confi
   const LogVisionSchema = z.object({
     result: VisionResultSchema,
     answers: AnswersSchema.default({}),
-    photoPath: z.string().min(1).max(300),
+    // Empty means the upload failed on the device. The estimate is still
+    // worth keeping, so the entry logs without a photo rather than erroring.
+    photoPath: z.string().max(300),
     mealType: MealTypeSchema.optional(),
     restaurantName: z.string().max(80).optional(),
     loggedAt: z.string().datetime().optional(),
@@ -160,6 +170,15 @@ export function createApiRouter(config: Config, vision = new VisionService(confi
     const parsed = LogVisionSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "invalid_request", issues: parsed.error.issues });
+      return;
+    }
+    // Storage RLS stops a client uploading into someone else's folder; this
+    // stops it *claiming* a path it doesn't own on an entry of its own.
+    if (parsed.data.photoPath !== "" && !isOwnedPhotoPath(parsed.data.photoPath, req.userId!)) {
+      res.status(400).json({
+        error: "invalid_photo_path",
+        message: "That photo path isn't one of yours.",
+      });
       return;
     }
     const { result, answers, ...opts } = parsed.data;

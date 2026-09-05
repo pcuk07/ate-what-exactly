@@ -1,4 +1,5 @@
 import * as SecureStore from "expo-secure-store";
+import { supabase } from "./supabase";
 import type {
   DaySummary,
   Food,
@@ -17,24 +18,16 @@ import type {
 
 const BASE_URL = process.env["EXPO_PUBLIC_API_URL"] ?? "http://localhost:8080";
 
-/** Session tokens live in the Keychain, device-only, never in AsyncStorage. */
-const TOKEN_KEY = "awe.session";
 const CONSENT_KEY = "awe.aiConsent";
 
-export async function getToken(): Promise<string | null> {
-  return SecureStore.getItemAsync(TOKEN_KEY, {
-    keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  });
-}
-
-export async function setToken(token: string): Promise<void> {
-  await SecureStore.setItemAsync(TOKEN_KEY, token, {
-    keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  });
-}
-
-export async function clearToken(): Promise<void> {
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
+/**
+ * The access token comes from the live Supabase session, which the client
+ * refreshes on its own. Reading it per request rather than caching a copy
+ * means an expired token is never sent after a refresh has already happened.
+ */
+async function getToken(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
 }
 
 /** §10.3: consent for sending photos to Claude, recorded per device. */

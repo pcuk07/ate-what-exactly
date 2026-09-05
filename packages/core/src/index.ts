@@ -9,3 +9,4 @@ export * from "./usual.js";
 export * from "./day.js";
 export * from "./sources/open-food-facts.js";
 export * from "./sources/resolve-food.js";
+export * from "./photos.js";
