@@ -30,8 +30,18 @@ const EnvSchema = z.object({
   /** Contact string sent to Open Food Facts, which asks for identifiable traffic. */
   OFF_USER_AGENT: z.string().default("awe/0.1 (support@atewhatexactly.app)"),
 
-  /** Per-user photo estimates allowed per rolling hour. Vision calls cost money. */
-  RATE_LIMIT_VISION_PER_HOUR: z.coerce.number().int().min(1).default(30),
+  /**
+   * Photo estimates are the only thing here that costs money — barcode,
+   * recipe and manual logging never reach the API. Two ceilings, because they
+   * catch different failures:
+   *
+   *  - per hour guards a burst: a retry loop, a stuck screen.
+   *  - per day is what actually bounds the bill. A person eats a handful of
+   *    meals a day, so 30 is generous; 30/hour alone would permit 720 a day,
+   *    which is no limit at all in cost terms.
+   */
+  RATE_LIMIT_VISION_PER_HOUR: z.coerce.number().int().min(1).default(12),
+  RATE_LIMIT_VISION_PER_DAY: z.coerce.number().int().min(1).default(30),
   RATE_LIMIT_API_PER_MINUTE: z.coerce.number().int().min(1).default(120),
 });
 

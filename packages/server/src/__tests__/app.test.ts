@@ -48,6 +48,23 @@ describe("configuration", () => {
   it("rejects a token secret short enough to brute-force", () => {
     expect(() => loadConfig({ ...env, MCP_TOKEN_SECRET: "short" })).toThrow(/MCP_TOKEN_SECRET/);
   });
+
+  it("bounds photo spend by the day, not only by the hour", () => {
+    // An hourly cap alone permits 24× its value per day, which is no ceiling
+    // at all when every call costs money.
+    const c = loadConfig(env);
+    expect(c.RATE_LIMIT_VISION_PER_DAY).toBeLessThan(c.RATE_LIMIT_VISION_PER_HOUR * 24);
+  });
+
+  it("lets the caps be tightened from the environment", () => {
+    const c = loadConfig({ ...env, RATE_LIMIT_VISION_PER_DAY: "5", RATE_LIMIT_VISION_PER_HOUR: "2" });
+    expect(c.RATE_LIMIT_VISION_PER_DAY).toBe(5);
+    expect(c.RATE_LIMIT_VISION_PER_HOUR).toBe(2);
+  });
+
+  it("refuses a zero cap, which would silently disable photo logging", () => {
+    expect(() => loadConfig({ ...env, RATE_LIMIT_VISION_PER_DAY: "0" })).toThrow();
+  });
 });
 
 describe("the running server", () => {

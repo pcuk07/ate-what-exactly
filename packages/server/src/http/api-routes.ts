@@ -20,7 +20,8 @@ import { RateLimiter } from "../middleware/rate-limit.js";
 export function createApiRouter(config: Config, vision = new VisionService(config)): Router {
   const router = Router();
   const auth = requireAppAuth(config);
-  const visionLimiter = new RateLimiter(config.RATE_LIMIT_VISION_PER_HOUR, 60 * 60 * 1000);
+  const visionHourly = new RateLimiter(config.RATE_LIMIT_VISION_PER_HOUR, 60 * 60 * 1000);
+  const visionDaily = new RateLimiter(config.RATE_LIMIT_VISION_PER_DAY, 24 * 60 * 60 * 1000);
   const apiLimiter = new RateLimiter(config.RATE_LIMIT_API_PER_MINUTE, 60 * 1000);
 
   router.use(auth, (req, res, next) => {
@@ -130,7 +131,17 @@ export function createApiRouter(config: Config, vision = new VisionService(confi
       });
       return;
     }
-    if (!visionLimiter.check(req.userId!).allowed) {
+    // Checked before the hourly window so a day-long block isn't reported as
+    // "try again shortly", which would be untrue.
+    if (!visionDaily.check(req.userId!).allowed) {
+      res.status(429).json({
+        error: "rate_limited",
+        message:
+          "That's the day's limit for photo estimates. Barcode and weighed logging still work, and photos are back tomorrow.",
+      });
+      return;
+    }
+    if (!visionHourly.check(req.userId!).allowed) {
       res.status(429).json({
         error: "rate_limited",
         message: "That's a lot of photos in one hour. Try again shortly, or log it by barcode.",
