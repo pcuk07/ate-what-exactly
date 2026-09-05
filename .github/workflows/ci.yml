@@ -8,15 +8,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ate-what-exactly
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm ci || npm install
+      - run: npm install
       - name: Build core (server and app depend on its types)
         run: npm run build -w packages/core
       - run: npm run typecheck
