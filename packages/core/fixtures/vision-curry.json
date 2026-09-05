@@ -1,0 +1,50 @@
+{
+  "dishName": "Chicken curry with rice",
+  "notFood": false,
+  "confidence": "medium",
+  "restaurantName": null,
+  "components": [
+    {
+      "name": "basmati rice",
+      "grams": 220,
+      "per100g": { "kcal": 130, "proteinG": 2.7, "carbsG": 28.2, "fatG": 0.3, "fibreG": 0.4 }
+    },
+    {
+      "name": "chicken thigh",
+      "grams": 140,
+      "per100g": { "kcal": 209, "proteinG": 26, "carbsG": 0, "fatG": 10.9, "fibreG": 0 }
+    },
+    {
+      "name": "cooking oil",
+      "grams": 25,
+      "per100g": { "kcal": 884, "proteinG": 0, "carbsG": 0, "fatG": 100, "fibreG": 0 }
+    },
+    {
+      "name": "curry sauce",
+      "grams": 90,
+      "per100g": { "kcal": 95, "proteinG": 1.5, "carbsG": 7.2, "fatG": 6.4, "fibreG": 1.1 }
+    }
+  ],
+  "questions": [
+    {
+      "id": "portion",
+      "text": "How much of the curry did you eat?",
+      "defaultOptionIndex": 1,
+      "options": [
+        { "label": "Half", "effect": { "type": "scale_all", "factor": 0.5 } },
+        { "label": "All of it", "effect": { "type": "none" } },
+        { "label": "Extra rice", "effect": { "type": "scale_component", "component": "basmati rice", "factor": 1.5 } }
+      ]
+    },
+    {
+      "id": "rice",
+      "text": "How much rice came with it?",
+      "defaultOptionIndex": 1,
+      "options": [
+        { "label": "Small", "effect": { "type": "scale_component", "component": "basmati rice", "factor": 0.6 } },
+        { "label": "Standard", "effect": { "type": "none" } },
+        { "label": "Extra rice", "effect": { "type": "scale_component", "component": "basmati rice", "factor": 1.5 } }
+      ]
+    }
+  ]
+}

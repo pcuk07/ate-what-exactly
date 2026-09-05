@@ -1,0 +1,26 @@
+{
+  "name": "ate-what-exactly",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Photo-first food logging with honest confidence tiers. Expo app + Node service layer + remote MCP connector on Supabase.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "dev:server": "npm run dev -w packages/server",
+    "dev:mobile": "npm run start -w apps/mobile"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

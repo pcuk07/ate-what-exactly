@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    // The Express, MCP and Anthropic SDK type definitions all model optional
+    // properties as `T | undefined` rather than truly-optional keys, so this
+    // flag produces noise at every integration point without catching bugs in
+    // our own code. Left on in @awe/core, where we own every type.
+    "exactOptionalPropertyTypes": false
+  },
+  "include": ["src"]
+}
